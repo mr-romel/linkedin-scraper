@@ -1,0 +1,129 @@
+{
+  "summary": {
+    "generated_at": "2026-09-10T23:14:39.549Z",
+    "sources": [
+      {
+        "source_id": "tiec_startups",
+        "source_name": "TIEC Startups",
+        "status": "error",
+        "count": 0,
+        "elapsed_ms": 21003,
+        "error": "The operation was aborted due to timeout"
+      },
+      {
+        "source_id": "egypt_innovate",
+        "source_name": "EgyptInnovate Startups",
+        "status": "ok",
+        "count": 6,
+        "elapsed_ms": 2534
+      },
+      {
+        "source_id": "itida_companies",
+        "source_name": "ITIDA Companies Database",
+        "status": "error",
+        "count": 0,
+        "elapsed_ms": 21000,
+        "error": "The operation was aborted due to timeout"
+      },
+      {
+        "source_id": "egyptian_startups",
+        "source_name": "Egyptian Startups Directory",
+        "status": "ok",
+        "count": 0,
+        "elapsed_ms": 641
+      }
+    ],
+    "total_candidates": 6,
+    "successful_sources": 2,
+    "failed_sources": 2
+  },
+  "results": [
+    {
+      "source_id": "tiec_startups",
+      "source_name": "TIEC Startups",
+      "status": "error",
+      "count": 0,
+      "elapsed_ms": 21003,
+      "error": "The operation was aborted due to timeout"
+    },
+    {
+      "source_id": "egypt_innovate",
+      "source_name": "EgyptInnovate Startups",
+      "status": "ok",
+      "count": 6,
+      "elapsed_ms": 2534,
+      "candidates": [
+        {
+          "company": "كير تكنولوجي",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/kyr-tknology",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        },
+        {
+          "company": "Lumora Storybooks",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/lumora-storybooks",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        },
+        {
+          "company": "Aristway, LLC",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/aristway-llc",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        },
+        {
+          "company": "PodMedia Network",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/podmedia-network",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        },
+        {
+          "company": "Nawah ecommerce",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/nawah-ecommerce",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        },
+        {
+          "company": "ذوي",
+          "source": "business_directory",
+          "source_url": "https://egyptinnovate.com/en/entities/profile/thoy",
+          "discovery_source_url": "https://egyptinnovate.com/en/entities/startup",
+          "country": "Egypt",
+          "source_id": "egypt_innovate",
+          "source_name": "EgyptInnovate Startups"
+        }
+      ]
+    },
+    {
+      "source_id": "itida_companies",
+      "source_name": "ITIDA Companies Database",
+      "status": "error",
+      "count": 0,
+      "elapsed_ms": 21000,
+      "error": "The operation was aborted due to timeout"
+    },
+    {
+      "source_id": "egyptian_startups",
+      "source_name": "Egyptian Startups Directory",
+      "status": "ok",
+      "count": 0,
+      "elapsed_ms": 641,
+      "candidates": []
+    }
+  ]
+}
