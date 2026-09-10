@@ -8,9 +8,9 @@ export function draft(l){const n=l.first_name||'أستاذ/أستاذة';const f
 export function qualificationScore(l){l=normalize(l);let s=0;const role=String(l.role).toLowerCase();const industry=String(l.industry).toLowerCase();if(l.email)s+=25;if(l.permission==='YES')s+=25;if(/ceo|founder|co[- ]?founder|chief executive|مدير|مؤسس|رئيس مجلس|عضو منتدب/.test(role))s+=25;if(/saas|software|tech|technology|fintech|ecommerce|health|medical|برمج|تقن|تكنولوجيا|تجارة إلكترونية|طبي/.test(industry))s+=15;if(l.linkedin_url)s+=10;return Math.min(100,s)}
 export function qualify(l){l=normalize(l);const score=qualificationScore(l);return {...l,qualification_score:score,status:score>=60&&l.status==='New'?'Qualified':l.status}}
 export function isFollowupDue(l,today=new Date()){l=normalize(l);if(!l.followup_date||['Won','Lost'].includes(l.status))return false;const d=new Date(`${l.followup_date}T23:59:59`);return !Number.isNaN(d.getTime())&&d.getTime()<=new Date(today).getTime()}
-export function canSend(l){l=normalize(l);return !!(l.email&&l.permission==='YES'&&!l.opted_out&&l.status==='Email Ready'&&!l.sent_at&&!l.message_id&&!l.send_lock)}
+export function canSend(l){l=normalize(l);return !!(l.email&&!l.opted_out&&l.status==='Email Ready'&&!l.sent_at&&!l.message_id&&!l.send_lock)}
 export function sendKey(l){l=normalize(l);return [l.id,String(l.email).trim().toLowerCase(),l.subject,l.body].join('|')}
-export function beginSend(l){l=normalize(l);if(!canSend(l))throw Error('Lead غير مؤهل للإرسال أو سبق إرساله');return {...l,send_lock:true,send_key:sendKey(l)}}
+export function beginSend(l){l=normalize(l);if(!canSend(l))throw Error('Lead غير مؤهل للإرسال أو سبق إرساله أو طلب عدم التواصل');return {...l,send_lock:true,send_key:sendKey(l)}}
 export function markSent(l,message_id=''){if(!message_id)throw Error('Message ID مطلوب');const now=new Date().toISOString();return {...l,status:'Sent',sent_at:now,last_contact:now,message_id,sent_subject:l.subject,sent_body:l.body,send_lock:false,send_key:sendKey(l)}}
 export function markSendFailed(l){return {...normalize(l),send_lock:false}}
 export function dedupeKey(l){l=normalize(l);return `${String(l.email||'').trim().toLowerCase()}|${String(l.linkedin_url||'').trim().toLowerCase()}`}
