@@ -1,0 +1,6 @@
+const INDUSTRY={saas:'البرمجيات والخدمات التقنية',tech:'التقنية',fintech:'التكنولوجيا المالية',health:'الخدمات الطبية',ecommerce:'التجارة الإلكترونية'};
+export const stages=['New','Qualified','Email Ready','Sent','Replied','Interested','Meeting','Proposal','Won','Lost'];
+export function normalize(l){return {...l,id:l.id||crypto.randomUUID(),status:l.status||'New',permission:l.permission||'',subject:l.subject||'',body:l.body||'',sent_at:l.sent_at||'',message_id:l.message_id||''}}
+export function draft(l){const n=l.first_name||'أستاذ/أستاذة';const focus=INDUSTRY[(l.industry||'').toLowerCase()]||l.industry||'نشاط الشركة';return {...l,subject:`ملاحظة قانونية سريعة لـ ${l.company}`,body:`أستاذ ${n}،\n\nبحكم نشاط ${l.company} في ${focus}، مع التوسع تظهر نقاط تعاقدية تستحق المراجعة قبل أن تتحول لمشكلة.\n\nأنا محمود خيرت، محامي بالاستئناف ومتخصص في العقود والشئون القانونية للشركات. أقدر أراجع عقد محدد أو أقيّم مشكلة قانونية وأوضح المخاطر والتعديلات المقترحة.\n\nلو مناسب، ابعتلي العقد أو وصف مختصر للمشكلة ونحدد أنسب مستوى للخدمة.\n\nمحمود خيرت`,status:'Email Ready'}}
+export function canSend(l){return !!(l.email&&l.permission==='YES'&&l.status==='Email Ready')}
+export function markSent(l,message_id=''){return {...l,status:'Sent',sent_at:new Date().toISOString(),message_id}}
