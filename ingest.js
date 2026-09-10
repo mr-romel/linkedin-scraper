@@ -1,0 +1,5 @@
+import {normalize,qualify,isDuplicate} from './core.js';
+import {normalizeSource,validateCandidate,prepareCandidate} from './discovery.js';
+export function ingestCandidates(candidates,existing=[]){const accepted=[],duplicates=[],rejected=[];for(const raw of Array.isArray(candidates)?candidates:[]){const source=normalizeSource(raw.source);const candidate=prepareCandidate(normalize({...raw,source}));const validation=validateCandidate(candidate);if(!validation.valid){rejected.push({lead:candidate,reasons:validation.errors});continue}if(existing.some(x=>isDuplicate(x,candidate))||accepted.some(x=>isDuplicate(x,candidate))){duplicates.push(candidate);continue}accepted.push(qualify(candidate))}return {accepted,duplicates,rejected}}
+export function summarizeIngestion(result){return {accepted:result.accepted.length,duplicates:result.duplicates.length,rejected:result.rejected.length,total:result.accepted.length+result.duplicates.length+result.rejected.length}}
+export function parseRecords(records,existing=[]){return ingestCandidates(records,existing)}
