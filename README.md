@@ -1,26 +1,42 @@
 # linkedin-scraper
 
-Portable zero-cost lead-generation core for Egyptian B2B legal outreach.
+Portable zero-cost B2B legal lead-generation and outreach core for Egypt.
 
-Architecture: UI-agnostic core first, so a web UI, Google Sheets adapter, or Android app can use the same lead model and workflow.
+Architecture: UI-agnostic core first, so the same lead model can power the current web UI and a future Android client.
 
-Flow: discovery/import -> qualification -> draft -> human review -> permitted send -> sent archive -> follow-up.
+Pipeline: permitted discovery/import -> normalization -> dedupe -> qualification -> personalized draft -> human review -> permission-gated send -> exact sent archive -> reply tracking -> follow-up -> pipeline analytics.
 
-This project does not automate unauthorized LinkedIn scraping or bypass LinkedIn controls. LinkedIn is a discovery/source field; lead data must be imported or collected through permitted means.
+## Discovery and compliance
 
-Code budget: under 300 lines of executable source code. Freeze every successful stage before adding the next feature.
+The engine accepts explicit permitted sources only: company website, business directory, referral, public company page, manual entry, or consented import. Arabic source labels are normalized to the internal source codes.
 
-## Gmail transport setup
+The project does not automate unauthorized LinkedIn scraping, bypass LinkedIn controls, or automate LinkedIn messaging. A LinkedIn URL may be stored as a lead/source field when obtained through a permitted method.
 
-The repository contains a Google Apps Script transport in `Code.gs`. It uses the Gmail Advanced Service and returns the real Gmail Message ID after a successful send.
+Direct electronic marketing is permission-gated. The lead record keeps permission, permission source, permission timestamp, opt-out state, and sent-message evidence. A lead cannot be sent when permission is not `YES`, when it is opted out, or when it has already been sent.
 
-1. Create/open a Google Apps Script project and add `Code.gs` plus `appsscript.json` from this repository.
-2. In the Apps Script project, enable the Gmail API under Services. If Google asks for the linked Google Cloud project API, enable Gmail API there as well.
-3. Deploy as a Web app. Execute as the account that owns the sending mailbox and choose the access setting appropriate to the account and deployment. Do not place passwords, API keys, or OAuth tokens in this repository.
-4. Copy the deployed Web App URL into the PWA using `إعداد رابط الإرسال`.
-5. Before any batch, create one test Lead with an address you control, set Marketing Permission to `YES`, generate its draft, and send only that one Lead.
-6. Confirm that the Gmail message arrived and that the Lead was archived as `Sent` with a Message ID. Only then use batches up to 5.
+## Current workflow controls
 
-The browser UI cannot safely hold Gmail credentials. The PWA sends only the permitted Lead payload to the server-side Apps Script transport. The server enforces permission, required fields, a send lock, and duplicate-send protection.
+- JSON and CSV import/export
+- Source normalization and candidate validation
+- Duplicate prevention by case-insensitive email or LinkedIn URL
+- Discovery Score and Qualification Score
+- Automatic qualification queue
+- Personalized legal outreach draft generation
+- Human-review state before sending
+- Send lock and Message ID requirement
+- Individual messages with a maximum batch of 5
+- Exact sent subject/body archive
+- Reply recording
+- Follow-up due queue
+- Pipeline dashboard and funnel metrics
+- Next-send-batch selector
 
-Important: deployment of the Apps Script Web App and enabling Gmail API are external Google-side steps; GitHub cannot perform those account-level actions. The code and manifest are versioned here so the transport remains reproducible and Android-ready.
+## Gmail transport
+
+`Code.gs` is a separate Google Apps Script transport. The browser never receives or stores the mailbox password. The PWA sends only the permitted lead payload to the deployed Web App, and the server returns a Gmail Message ID after a successful send.
+
+Deploy the Apps Script Web App using the repository's `Code.gs` and `appsscript.json`, then place its Web App URL into the PWA through `إعداد رابط الإرسال`. Account-level deployment and authorization remain Google-side operations.
+
+## Operating rule
+
+Discovery can collect candidates, but sending is never automatic merely because a candidate exists. The operator reviews the lead, confirms the legal outreach draft, verifies Marketing Permission, and then sends a small batch. Successful sends are archived with their Message ID for traceability.
