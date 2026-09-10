@@ -1,25 +1,11 @@
-# LinkedIn Scraper
+# linkedin-scraper
 
-Standalone lead-generation workspace for Mahmoud Khyrat's B2B legal outreach.
+Portable zero-cost lead-generation core for Egyptian B2B legal outreach.
 
-## Important
-This project does **not** automate scraping, crawling, login automation, or bulk actions on LinkedIn. LinkedIn's terms prohibit unauthorized scraping/automated collection. LinkedIn is used only as a discovery/verification source; leads are entered/imported through lawful/manual methods.
+Architecture: UI-agnostic core first, so a web UI, Google Sheets adapter, or Android app can use the same lead model and workflow.
 
-## MVP
-- Google Sheet as the lead database
-- Lead status and permission tracking
-- Personalized email draft generation from structured lead data
-- Review before sending
-- Individual Gmail sending with a small selected batch
-- Exact sent subject/body and timestamp stored beside the lead
-- Three service-package fields
-- WhatsApp / LinkedIn / Facebook contact fields
+Flow: discovery/import -> qualification -> draft -> human review -> permitted send -> sent archive -> follow-up.
 
-## Code budget
-Target: under 300 lines of executable code. The first implementation is intentionally small and dependency-free.
+This project does not automate unauthorized LinkedIn scraping or bypass LinkedIn controls. LinkedIn is a discovery/source field; lead data must be imported or collected through permitted means.
 
-## Workflow
-New → Qualified → Email Ready → Sent → Replied → Interested → Meeting → Proposal → Won/Lost
-
-## Compliance gate
-A lead cannot be sent by the tool unless `Marketing Permission` is marked `YES`. Keep the source and permission evidence with each lead.
+Code budget: under 300 lines of executable source code. Freeze every successful stage before adding the next feature.
