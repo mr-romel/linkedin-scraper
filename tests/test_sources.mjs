@@ -19,6 +19,14 @@ test('public company HTML parser keeps company links and removes navigation nois
   assert.equal(rows[1].country,'Egypt');
 });
 
+test('EgyptInnovate parser keeps entity profiles and rejects navigation/category links',()=>{
+  const html=`<a href="/en/about-us">About Us</a><a href="/en/entities/profile/alpha">Alpha Startup</a><a href="/en/search/HealthTech">HealthTech</a><a href="/en/entities/profile/alpha">Alpha</a>`;
+  const rows=extractPublicCompanyCandidates(html,{source:'business_directory',sourceId:'egypt_innovate',baseUrl:'https://egyptinnovate.com/en/entities/startup'});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].company,'Alpha Startup');
+  assert.match(rows[0].source_url,/entities\/profile\/alpha$/);
+});
+
 test('public source fetch is injectable and never requires LinkedIn',async()=>{
   const calls=[];
   const rows=await discoverFromPublicSource('tiec_startups',{fetchImpl:async(url,options)=>{calls.push({url,options});return {ok:true,status:200,text:async()=>'<a href="/company/wuzzuf">Wuzzuf</a>'}}});
