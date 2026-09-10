@@ -14,3 +14,9 @@ jobs:
         with:
           node-version: '20'
       - run: node --test tests/test_core.mjs tests/test_discovery.mjs tests/test_ingest.mjs tests/test_sources.mjs
+      - run: node discover_sources.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-discovery-results
+          path: artifacts/public-discovery*.json
+          if-no-files-found: error
