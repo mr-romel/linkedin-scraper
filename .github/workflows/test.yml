@@ -10,3 +10,7 @@ jobs:
           python-version: '3.x'
       - run: pip install pytest
       - run: PYTHONPATH=. pytest -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test tests/test_core.mjs
