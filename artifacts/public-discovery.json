@@ -1,13 +1,13 @@
 {
   "summary": {
-    "generated_at": "2026-09-11T10:47:48.428Z",
+    "generated_at": "2026-09-11T10:50:49.972Z",
     "sources": [
       {
         "source_id": "tiec_startups",
         "source_name": "TIEC Startups",
         "status": "error",
         "count": 0,
-        "elapsed_ms": 21001,
+        "elapsed_ms": 21002,
         "error": "The operation was aborted due to timeout"
       },
       {
@@ -15,14 +15,14 @@
         "source_name": "EgyptInnovate Startups",
         "status": "ok",
         "count": 6,
-        "elapsed_ms": 1868
+        "elapsed_ms": 1659
       },
       {
         "source_id": "itida_companies",
         "source_name": "ITIDA Companies Database",
         "status": "error",
         "count": 0,
-        "elapsed_ms": 21001,
+        "elapsed_ms": 21000,
         "error": "The operation was aborted due to timeout"
       },
       {
@@ -30,7 +30,7 @@
         "source_name": "Egyptian Startups Directory",
         "status": "ok",
         "count": 0,
-        "elapsed_ms": 678
+        "elapsed_ms": 637
       }
     ],
     "total_candidates": 6,
@@ -43,7 +43,7 @@
       "source_name": "TIEC Startups",
       "status": "error",
       "count": 0,
-      "elapsed_ms": 21001,
+      "elapsed_ms": 21002,
       "error": "The operation was aborted due to timeout"
     },
     {
@@ -51,7 +51,7 @@
       "source_name": "EgyptInnovate Startups",
       "status": "ok",
       "count": 6,
-      "elapsed_ms": 1868,
+      "elapsed_ms": 1659,
       "candidates": [
         {
           "company": "كير تكنولوجي",
@@ -114,7 +114,7 @@
       "source_name": "ITIDA Companies Database",
       "status": "error",
       "count": 0,
-      "elapsed_ms": 21001,
+      "elapsed_ms": 21000,
       "error": "The operation was aborted due to timeout"
     },
     {
@@ -122,7 +122,7 @@
       "source_name": "Egyptian Startups Directory",
       "status": "ok",
       "count": 0,
-      "elapsed_ms": 678,
+      "elapsed_ms": 637,
       "candidates": []
     }
   ]
