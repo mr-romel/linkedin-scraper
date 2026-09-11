@@ -19,6 +19,18 @@ const INDUSTRY_NEEDS={
   food:['food','beverage','restaurant','fmcg','أغذية','مشروبات','مطاعم'],
   services:['services','consulting','agency','خدمات','استشارات']
 };
+const INDUSTRY_DEFAULT_NEEDS={
+  construction:['contracts','regulatory','disputes'],
+  real_estate:['contracts','corporate','regulatory'],
+  manufacturing:['contracts','employment','procurement'],
+  technology:['contracts','corporate','regulatory'],
+  fintech:['regulatory','contracts','corporate'],
+  healthcare:['regulatory','contracts','employment'],
+  trading:['contracts','procurement','regulatory'],
+  logistics:['contracts','procurement','regulatory'],
+  food:['regulatory','employment','contracts'],
+  services:['contracts','employment','corporate']
+};
 const NEED_LABELS={
   legal:'External legal counsel / legal operations',
   contracts:'Contracts & commercial agreements',
@@ -32,25 +44,17 @@ const NEED_LABELS={
 function norm(v=''){return String(v).toLowerCase().replace(/[–—]/g,'-').replace(/\s+/g,' ').trim()}
 function hasAny(text,terms){const s=norm(text);return terms.some(t=>s.includes(norm(t)))}
 function splitTitle(raw=''){
-  const parts=String(raw).split(/\s+[|–—-]\s+/).map(x=>x.trim()).filter(Boolean);
-  return parts;
+  return String(raw).split(/\s+[|–—-]\s+/).map(x=>x.trim()).filter(Boolean);
 }
 function inferName(title=''){
-  const parts=splitTitle(title);
-  if(!parts.length)return '';
+  const parts=splitTitle(title); if(!parts.length)return '';
   const first=parts[0];
   if(/linkedin|ceo|founder|director|manager|مدير|مؤسس|رئيس|عضو/.test(norm(first)))return '';
   return first.length<=80?first:'';
 }
-function inferRole(title=''){
-  const parts=splitTitle(title);
-  if(parts.length>=2)return parts[1];
-  return title;
-}
+function inferRole(title=''){const parts=splitTitle(title); return parts.length>=2?parts[1]:title;}
 function inferCompany(title='',existing=''){
-  if(existing)return existing.trim();
-  const parts=splitTitle(title);
-  return parts.length>=3?parts.slice(2).join(' - '):'';
+  if(existing)return existing.trim(); const parts=splitTitle(title); return parts.length>=3?parts.slice(2).join(' - '):'';
 }
 function decisionPower(role=''){
   const r=norm(role);
@@ -59,8 +63,16 @@ function decisionPower(role=''){
   if(hasAny(r,['legal manager','hr manager','procurement manager','finance manager','operations manager','مدير قانوني','مدير مشتريات','مدير مالي','مدير عمليات']))return {label:'Medium-High',score:72};
   return {label:'Unknown',score:35};
 }
-function inferLegalNeeds({role='',industry='',snippet='',company=''}){
-  const text=norm(`${role} ${industry} ${snippet} ${company}`);const needs=[];
+function inferIndustryKey(text=''){
+  const s=norm(text); let best=''; let bestScore=0;
+  for(const [name,terms] of Object.entries(INDUSTRY_NEEDS)){
+    const n=terms.filter(t=>s.includes(norm(t))).length;
+    if(n>bestScore){best=name;bestScore=n;}
+  }
+  return best;
+}
+function inferLegalNeeds({role='',industry='',snippet='',company='',query=''}){
+  const text=norm(`${role} ${industry} ${snippet} ${company} ${query}`); const needs=[];
   if(hasAny(text,FUNCTION_TERMS.legal)||hasAny(norm(role),['ceo','founder','owner','managing director','general manager','chairman','partner','مؤسس','مالك','مدير عام','رئيس مجلس']))needs.push('legal');
   if(hasAny(text,['contract','agreement','vendor','commercial','مقاول','تعاقد','عقد','اتفاقية']))needs.push('contracts');
   if(hasAny(text,FUNCTION_TERMS.hr)||hasAny(text,['employee','employment','staff','عمل','عمال','موظف']))needs.push('employment');
@@ -68,11 +80,13 @@ function inferLegalNeeds({role='',industry='',snippet='',company=''}){
   if(hasAny(text,FUNCTION_TERMS.procurement)||hasAny(text,['vendor','supplier','purchase','مورد','شراء']))needs.push('procurement');
   if(hasAny(text,['license','licensed','regulatory','compliance','ترخيص','هيئة','تنظيم']))needs.push('regulatory');
   if(hasAny(text,['dispute','litigation','claim','arbitration','lawsuit','نزاع','تحكيم','دعوى','مطالبة']))needs.push('disputes');
+  const industryKey=inferIndustryKey(text);
+  for(const need of INDUSTRY_DEFAULT_NEEDS[industryKey]||[])needs.push(need);
   if(!needs.length)needs.push('contracts','corporate');
   return [...new Set(needs)];
 }
 function industryFit(industry='',query=''){
-  const text=norm(`${industry} ${query}`);let best='';let bestScore=0;
+  const text=norm(`${industry} ${query}`); let best=''; let bestScore=0;
   for(const [name,terms] of Object.entries(INDUSTRY_NEEDS)){
     const score=terms.filter(t=>text.includes(norm(t))).length;
     if(score>bestScore){best=name;bestScore=score;}
@@ -80,7 +94,7 @@ function industryFit(industry='',query=''){
   return {industry:industry||best,confidence:bestScore?Math.min(1,bestScore/2):0};
 }
 function qualification({decisionPowerScore,legalNeeds,industryConfidence,company,linkedin_url}){
-  let score=0;score+=decisionPowerScore*0.45;score+=Math.min(100,legalNeeds.length*15)*0.25;score+=industryConfidence*100*0.15;score+=(company?10:0);score+=(linkedin_url?10:0);
+  let score=0; score+=decisionPowerScore*0.45; score+=Math.min(100,legalNeeds.length*15)*0.25; score+=industryConfidence*100*0.15; score+=(company?10:0); score+=(linkedin_url?10:0);
   return Math.min(100,Math.round(score));
 }
 
@@ -91,13 +105,9 @@ export function enrichLinkedInLead(row={}){
   const name=row.name||row.full_name||inferName(title);
   const fit=industryFit(row.industry,row.query);
   const power=decisionPower(role);
-  const legalNeeds=inferLegalNeeds({role,industry:fit.industry,snippet:row.snippet,company});
+  const legalNeeds=inferLegalNeeds({role,industry:fit.industry,snippet:row.snippet,company,query:row.query});
   const qualification_score=qualification({decisionPowerScore:power.score,legalNeeds,industryConfidence:fit.confidence,company,linkedin_url:row.linkedin_url});
   return {...row,name,role,company,industry:fit.industry,industry_confidence:fit.confidence,decision_power:power.label,decision_power_score:power.score,legal_needs:legalNeeds.map(k=>NEED_LABELS[k]||k),qualification_score,source_confidence:row.linkedin_url?0.75:0.35};
 }
-
-export function enrichLinkedInLeads(rows=[]){
-  return rows.map(enrichLinkedInLead).sort((a,b)=>(b.qualification_score||0)-(a.qualification_score||0));
-}
-
-export const enrichmentRules={decisionPower:'role-based',legalNeed:'role+industry+snippet',publicDataOnly:true};
+export function enrichLinkedInLeads(rows=[]){return rows.map(enrichLinkedInLead).sort((a,b)=>(b.qualification_score||0)-(a.qualification_score||0));}
+export const enrichmentRules={decisionPower:'role-based',legalNeed:'role+industry+snippet+query',publicDataOnly:true};
