@@ -1,0 +1,52 @@
+name: LinkedIn Public Decision Maker Discovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Maximum public LinkedIn candidates
+        required: false
+        default: '100'
+      engine:
+        description: Search engine
+        required: false
+        default: 'google'
+  schedule:
+    - cron: '37 7 * * 1-5'
+
+concurrency:
+  group: linkedin-public-discovery
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LINKEDIN_LEAD_LIMIT: ${{ github.event.inputs.limit || '100' }}
+      LINKEDIN_SEARCH_ENGINE: ${{ github.event.inputs.engine || 'google' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run regression tests
+        run: |
+          node tests/test_linkedin_public_discovery.mjs
+          node tests/test_core.mjs
+          node tests/test_discovery.mjs
+          node tests/test_ingest.mjs
+          node tests/test_sources.mjs
+      - name: Discover public LinkedIn decision makers
+        run: node run_linkedin_discovery.mjs
+      - name: Upload lead exports
+        uses: actions/upload-artifact@v4
+        with:
+          name: linkedin-public-decision-makers
+          path: |
+            artifacts/linkedin-decision-makers.json
+            artifacts/linkedin-decision-makers.csv
+          if-no-files-found: error
