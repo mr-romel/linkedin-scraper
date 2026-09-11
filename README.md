@@ -4,11 +4,11 @@ Portable zero-cost B2B legal lead-generation and outreach core for Egypt.
 
 Architecture: UI-agnostic core first, so the same lead model can power the current web UI and a future Android client.
 
-Pipeline: permitted discovery/import -> LinkedIn public discovery -> normalization -> dedupe -> qualification -> personalized draft -> human review -> permission-gated send -> exact sent archive -> reply tracking -> follow-up -> pipeline analytics.
+Pipeline: permitted discovery/import -> LinkedIn public discovery -> company enrichment -> normalization -> dedupe -> qualification -> personalized draft -> human review -> permission-gated send -> exact sent archive -> reply tracking -> follow-up -> pipeline analytics.
 
 ## LinkedIn decision-maker discovery
 
-The repository now includes a dedicated public LinkedIn discovery engine in `linkedin_public_discovery.js`.
+The repository includes a dedicated public LinkedIn discovery engine in `linkedin_public_discovery.js`.
 
 It generates targeted public-search queries for Egypt and looks for public LinkedIn profile URLs matching decision-maker roles such as CEO, Founder, Co-Founder, Owner, Managing Director, General Manager, Chairman, Partner, COO, CFO, HR, Legal and Procurement leadership. It can combine these roles with target industries such as manufacturing, technology, healthcare, construction, trading, logistics, real estate, food and services.
 
@@ -16,10 +16,41 @@ It generates targeted public-search queries for Egypt and looks for public Linke
 
 - `artifacts/linkedin-decision-makers.json`
 - `artifacts/linkedin-decision-makers.csv`
+- `artifacts/linkedin-decision-makers-summary.json`
+
+## Public company enrichment
+
+`company_enrichment.js` adds a second discovery layer using public web search and public company pages. When available, it extracts:
+
+- company website and domain
+- public business email addresses
+- public business phone numbers
+- company description/title
+- public employee-size signals
+- public contact-page URLs
+- enrichment status and source confidence
+
+The same company is enriched once per run and reused across duplicate leads. This is intentionally limited to public business information; it does not discover private personal contact data, reuse credentials, or log into LinkedIn.
+
+Set `LINKEDIN_COMPANY_ENRICHMENT=false` only if a run must skip this layer.
+
+## Scoring
+
+Each discovered person receives:
+
+- Discovery Score: strength of the public-search match
+- Decision Power Score: likelihood that the role can approve or influence legal spend
+- Legal Need: likely service areas such as contracts, employment, corporate governance, procurement, regulatory compliance and disputes
+- Qualification Score: combined conversion-priority score
+- Source Confidence: confidence in the public evidence
+
+The resulting row is intended to become a qualified legal lead, not merely a LinkedIn URL.
+
+## Scheduling
 
 The scheduled workflow is `.github/workflows/linkedin-public-discovery.yml`. It runs on weekdays and can also be started manually with a configurable lead limit and search engine.
 
-This module is intentionally public-search-only: it does not log into LinkedIn, bypass controls, automate LinkedIn messaging, or evade access restrictions. It is designed to discover public profile URLs and rank them for the legal lead pipeline.
+The normal test workflow also runs the LinkedIn discovery, lead-enrichment and company-enrichment test suites.
 
 ## Discovery and compliance
 
@@ -27,13 +58,18 @@ The engine accepts explicit permitted sources only: company website, business di
 
 Direct electronic marketing is permission-gated. The lead record keeps permission, permission source, permission timestamp, opt-out state, and sent-message evidence. A lead cannot be sent when permission is not `YES`, when it is opted out, or when it has already been sent.
 
+The LinkedIn module is intentionally public-search-only: it does not log into LinkedIn, bypass controls, automate LinkedIn messaging, or evade access restrictions.
+
 ## Current workflow controls
 
 - JSON and CSV import/export
 - Public LinkedIn decision-maker discovery
 - Role + industry query generation
 - LinkedIn URL deduplication
+- Public company enrichment
+- Public business contact discovery
 - Discovery Score and Qualification Score
+- Decision Power Score
 - Automatic qualification queue
 - Personalized legal outreach draft generation
 - Human-review state before sending
@@ -53,4 +89,4 @@ Deploy the Apps Script Web App using the repository's `Code.gs` and `appsscript.
 
 ## Operating rule
 
-Discovery can collect candidates, but sending is never automatic merely because a candidate exists. The operator reviews the lead, confirms the legal outreach draft, verifies Marketing Permission, and then sends a small batch. Successful sends are archived with their Message ID for traceability.
+Discovery and enrichment can collect public business information, but sending is never automatic merely because a candidate exists. The operator reviews the lead, confirms the legal outreach draft, verifies Marketing Permission, and then sends a small batch. Successful sends are archived with their Message ID for traceability.
