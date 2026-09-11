@@ -1,0 +1,93 @@
+const DEFAULT_ROLES=[
+  'CEO','Founder','Co-Founder','Owner','Managing Director','General Manager','Chairman','Partner',
+  'COO','CFO','HR Director','HR Manager','Head of HR','Legal Director','Legal Manager','Head of Legal',
+  'General Counsel','Procurement Manager','Administration Director','عضو منتدب','مدير عام','رئيس مجلس الإدارة','مؤسس','شريك مؤسس'
+];
+const DEFAULT_INDUSTRIES=['manufacturing','technology','software','fintech','healthcare','medical','construction','trading','logistics','real estate','food','services'];
+const SEARCH_ENGINES={
+  google:'https://www.google.com/search?q=',
+  bing:'https://www.bing.com/search?q='
+};
+
+function esc(value){return encodeURIComponent(String(value||''))}
+function cleanText(value=''){return String(value).replace(/<script[\\s\\S]*?<\\/script>/gi,' ').replace(/<style[\\s\\S]*?<\\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&#39;/gi,"'").replace(/&quot;/gi,'"').replace(/\\s+/g,' ').trim()}
+function linkedinUrl(value=''){
+  const m=String(value).match(/https?:\\/\\/(?:[a-z]{2,3}\\.)?linkedin\\.com\\/in\\/[A-Za-z0-9%_-]+(?:\\/)?/i);
+  return m?m[0].replace(/\\/$/,''):'';
+}
+function scoreLead(row){
+  const title=String(row.title||row.role||'').toLowerCase();
+  const snippet=String(row.snippet||'').toLowerCase();
+  let score=0;
+  if(/\\b(ceo|founder|co-founder|owner|managing director|general manager|chairman|partner)\\b|مؤسس|رئيس مجلس|عضو منتدب|مدير عام/.test(title))score+=45;
+  else if(/\\b(hr|human resources|legal|cfo|coo|procurement)\\b|موارد بشرية|قانوني|مشتريات/.test(title))score+=32;
+  if(/egypt|cairo|alexandria|مصر|القاهرة|الإسكندرية/.test(`${title} ${snippet}`))score+=20;
+  if(row.company)score+=15;
+  if(row.linkedin_url)score+=20;
+  return Math.min(100,score);
+}
+
+export function buildLinkedInQueries({roles=DEFAULT_ROLES,industries=DEFAULT_INDUSTRIES,country='Egypt',maxQueries=60}={}){
+  const queries=[];
+  for(const role of roles){
+    for(const industry of industries){
+      queries.push(`site:linkedin.com/in/ "${role}" "${industry}" "${country}"`);
+      if(queries.length>=maxQueries)return queries;
+    }
+  }
+  return queries;
+}
+
+export function buildSearchUrl(query,{engine='google'}={}){
+  const base=SEARCH_ENGINES[engine]||SEARCH_ENGINES.google;
+  return `${base}${esc(query)}`;
+}
+
+export function parseSearchResults(html,{query='',engine='google'}={}){
+  const text=String(html||'');
+  const out=[];const seen=new Set();
+  const linkRe=/<a\\b[^>]*href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>/gi;
+  let m;
+  while((m=linkRe.exec(text))){
+    const rawHref=m[1];
+    let href=rawHref;
+    const match=rawHref.match(/https?:\\/\\/(?:[a-z]{2,3}\\.)?linkedin\\.com\\/in\\/[A-Za-z0-9%_-]+(?:\\/)?/i);
+    if(match)href=match[0];
+    const profile=linkedinUrl(href);
+    if(!profile)continue;
+    const key=profile.toLowerCase();if(seen.has(key))continue;seen.add(key);
+    const title=cleanText(m[2]);
+    const companyMatch=title.match(/[-|–—]\\s*([^|–—]+)$/);
+    const company=companyMatch?companyMatch[1].trim():'';
+    const row={linkedin_url:profile,title,company,query,engine,source:'linkedin_public_search'};
+    row.discovery_score=scoreLead(row);out.push(row);
+  }
+  return out;
+}
+
+export async function discoverLinkedInPublic({queries=buildLinkedInQueries(),engine='google',fetchImpl=globalThis.fetch,timeoutMs=20000,maxResults=100}={}){
+  if(typeof fetchImpl!=='function')throw Error('Fetch غير متاح في بيئة التشغيل');
+  const results=[];const seen=new Set();
+  for(const query of queries){
+    const response=await fetchImpl(buildSearchUrl(query,{engine}),{headers:{'User-Agent':'Khyrat-LinkedIn-Public-Discovery/1.0','Accept':'text/html,application/xhtml+xml'},signal:AbortSignal.timeout(timeoutMs)});
+    if(!response.ok)continue;
+    const html=await response.text();
+    for(const row of parseSearchResults(html,{query,engine})){
+      const key=row.linkedin_url.toLowerCase();
+      if(seen.has(key))continue;
+      seen.add(key);results.push(row);
+      if(results.length>=maxResults)return results;
+    }
+    await new Promise(r=>setTimeout(r,700));
+  }
+  return results.sort((a,b)=>b.discovery_score-a.discovery_score);
+}
+
+export const linkedinDiscoveryRules={
+  publicSearchOnly:true,
+  noLinkedInLogin:true,
+  noControlBypass:true,
+  noAutomatedLinkedInMessaging:true,
+  defaultRoles:DEFAULT_ROLES,
+  defaultIndustries:DEFAULT_INDUSTRIES
+};
