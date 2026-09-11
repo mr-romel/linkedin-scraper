@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';
+import {buildDeepQueries,deepGoogleDiscover,crawlPublicCompany} from './google_deep_discovery.js';
+import {enrichLinkedInLeads} from './linkedin_lead_enrichment.js';
+import {enrichCompanies} from './company_enrichment.js';
+const maxPeople=Math.max(50,Math.min(2000,Number(process.env.DEEP_LEAD_LIMIT||500)));
+const maxDomains=Math.max(50,Math.min(1000,Number(process.env.DEEP_DOMAIN_LIMIT||300)));
+const roles=(process.env.LINKEDIN_ROLES||'').split(',').map(x=>x.trim()).filter(Boolean);
+const industries=(process.env.LINKEDIN_INDUSTRIES||'').split(',').map(x=>x.trim()).filter(Boolean);
+const queries=buildDeepQueries({roles,industries,maxQueries:Math.max(40,Number(process.env.DEEP_MAX_QUERIES||160))});
+const discovered=await deepGoogleDiscover({queries,maxDomains,maxPeople});
+const crawled=[];
+for(const d of discovered.domains.slice(0,Number(process.env.DEEP_CRAWL_DOMAINS||100))){try{const c=await crawlPublicCompany({baseUrl:d.url,maxPages:8});crawled.push({...d,...c})}catch{}}
+const companyRows=crawled.map(x=>({company:x.domain,company_domain:x.domain,company_website:x.url,public_emails:x.emails,public_phones:x.phones,public_people:x.people,source:'google_deep_public_crawl',source_confidence:x.source_confidence}));
+const enriched=await enrichCompanies(companyRows,{engine:process.env.LINKEDIN_SEARCH_ENGINE||'google'});
+const people=[...discovered.people,...crawled.flatMap(x=>x.people||[])];
+const uniquePeople=[...new Map(people.map(p=>[`${p.name.toLowerCase()}|${p.role.toLowerCase()}|${p.company||''}`,p])).values()];
+const leadRows=uniquePeople.map(p=>({...p,company:p.company||'',industry:'',linkedin_url:p.linkedin_url||'',query:p.query||'',engine:p.engine||'google'}));
+const leads=enrichLinkedInLeads(leadRows);
+await fs.mkdir('artifacts',{recursive:true});
+await fs.writeFile('artifacts/google-deep-discovery.json',JSON.stringify({generated_at:new Date().toISOString(),queries:queries.length,domain_count:discovered.domains.length,crawled_domains:crawled.length,people_count:leads.length,domains:enriched,leads},null,2));
+await fs.writeFile('artifacts/google-deep-discovery-summary.json',JSON.stringify({generated_at:new Date().toISOString(),queries:queries.length,domains:discovered.domains.length,crawled_domains:crawled.length,people:leads.length,emails:[...new Set(crawled.flatMap(x=>x.emails||[]))].length,phones:[...new Set(crawled.flatMap(x=>x.phones||[]))].length,high_priority:leads.filter(x=>x.qualification_score>=75).length},null,2));
+console.log(JSON.stringify({queries:queries.length,domains:discovered.domains.length,crawled_domains:crawled.length,people:leads.length,high_priority:leads.filter(x=>x.qualification_score>=75).length},null,2));
