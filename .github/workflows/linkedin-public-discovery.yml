@@ -11,6 +11,11 @@ on:
         description: Search engine
         required: false
         default: 'google'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'artifacts/**'
   schedule:
     - cron: '37 7 * * 1-5'
 
@@ -56,5 +61,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add artifacts/linkedin-decision-makers.json artifacts/linkedin-decision-makers.csv artifacts/linkedin-decision-makers-summary.json
-          git diff --cached --quiet || git commit -m "chore: refresh LinkedIn decision-maker discovery"
+          git diff --cached --quiet || git commit -m "chore: refresh LinkedIn decision-maker discovery [skip ci]"
           git push
