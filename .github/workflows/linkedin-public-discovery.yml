@@ -6,7 +6,7 @@ on:
       limit:
         description: Maximum public LinkedIn candidates
         required: false
-        default: '100'
+        default: '200'
       engine:
         description: Search engine
         required: false
@@ -31,13 +31,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      LINKEDIN_LEAD_LIMIT: ${{ github.event.inputs.limit || '100' }}
+      LINKEDIN_LEAD_LIMIT: ${{ github.event.inputs.limit || '200' }}
       LINKEDIN_SEARCH_ENGINE: ${{ github.event.inputs.engine || 'google' }}
+      LINKEDIN_MAX_QUERIES: '120'
+      LINKEDIN_COMPANY_ENRICHMENT: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Run regression tests
         run: |
           node tests/test_linkedin_public_discovery.mjs
@@ -49,6 +51,9 @@ jobs:
           node tests/test_sources.mjs
       - name: Discover public LinkedIn decision makers
         run: node run_linkedin_discovery.mjs
+      - name: Verify lead snapshot is populated
+        run: |
+          node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('artifacts/linkedin-decision-makers.json','utf8')); if(!Array.isArray(x.leads)||x.leads.length===0) process.exit(1); console.log('LinkedIn leads:',x.leads.length)"
       - name: Upload lead exports
         uses: actions/upload-artifact@v4
         with:
