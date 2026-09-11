@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-10T23:19:07.099Z",
+  "generated_at": "2026-09-11T10:47:48.428Z",
   "sources": [
     {
       "source_id": "tiec_startups",
       "source_name": "TIEC Startups",
       "status": "error",
       "count": 0,
-      "elapsed_ms": 21002,
+      "elapsed_ms": 21001,
       "error": "The operation was aborted due to timeout"
     },
     {
@@ -14,14 +14,14 @@
       "source_name": "EgyptInnovate Startups",
       "status": "ok",
       "count": 6,
-      "elapsed_ms": 2264
+      "elapsed_ms": 1868
     },
     {
       "source_id": "itida_companies",
       "source_name": "ITIDA Companies Database",
       "status": "error",
       "count": 0,
-      "elapsed_ms": 21002,
+      "elapsed_ms": 21001,
       "error": "The operation was aborted due to timeout"
     },
     {
@@ -29,7 +29,7 @@
       "source_name": "Egyptian Startups Directory",
       "status": "ok",
       "count": 0,
-      "elapsed_ms": 615
+      "elapsed_ms": 678
     }
   ],
   "total_candidates": 6,
