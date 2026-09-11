@@ -16,6 +16,9 @@ jobs:
         with:
           node-version: '22'
       - run: node --test tests/test_core.mjs tests/test_discovery.mjs tests/test_ingest.mjs tests/test_sources.mjs
+      - run: node tests/test_linkedin_public_discovery.mjs
+      - run: node tests/test_linkedin_lead_enrichment.mjs
+      - run: node tests/test_company_enrichment.mjs
       - run: node discover_sources.mjs
       - name: Publish discovery snapshot
         run: |
