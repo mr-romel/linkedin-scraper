@@ -17,7 +17,7 @@ on:
     paths-ignore:
       - 'artifacts/**'
   schedule:
-    - cron: '37 7 * * 1-5'
+    - cron: '37 7,13,19 * * 1-5'
 
 concurrency:
   group: linkedin-public-discovery
