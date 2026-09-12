@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths-ignore: ['artifacts/**']
   schedule:
-    - cron: '17 8 * * 1-5'
+    - cron: '17 8,14,20 * * 1-5'
 
 concurrency:
   group: google-deep-discovery
