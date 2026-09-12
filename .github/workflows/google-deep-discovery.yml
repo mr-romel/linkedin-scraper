@@ -34,6 +34,8 @@ jobs:
       - name: Verify deep snapshot
         run: |
           node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('artifacts/google-deep-discovery.json','utf8')); if(!Array.isArray(x.leads)||!Array.isArray(x.domains)) process.exit(1); console.log('Deep leads:',x.leads.length,'domains:',x.domains.length)"
+      - name: Update cumulative lead archive
+        run: node archive_discovery.mjs
       - name: Upload deep exports
         uses: actions/upload-artifact@v4
         with:
@@ -41,11 +43,12 @@ jobs:
           path: |
             artifacts/google-deep-discovery.json
             artifacts/google-deep-discovery-summary.json
+            artifacts/lead-archive.json
           if-no-files-found: error
-      - name: Publish deep snapshot
+      - name: Publish deep snapshot and archive
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add artifacts/google-deep-discovery.json artifacts/google-deep-discovery-summary.json
-          git diff --cached --quiet || git commit -m "chore: refresh Google deep discovery [skip ci]"
+          git add artifacts/google-deep-discovery.json artifacts/google-deep-discovery-summary.json artifacts/lead-archive.json
+          git diff --cached --quiet || git commit -m "chore: refresh Google deep discovery archive [skip ci]"
           git push
