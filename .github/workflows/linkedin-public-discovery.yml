@@ -54,6 +54,8 @@ jobs:
       - name: Verify lead snapshot is populated
         run: |
           node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('artifacts/linkedin-decision-makers.json','utf8')); if(!Array.isArray(x.leads)||x.leads.length===0) process.exit(1); console.log('LinkedIn leads:',x.leads.length)"
+      - name: Update cumulative lead archive
+        run: node archive_discovery.mjs
       - name: Upload lead exports
         uses: actions/upload-artifact@v4
         with:
@@ -62,11 +64,12 @@ jobs:
             artifacts/linkedin-decision-makers.json
             artifacts/linkedin-decision-makers.csv
             artifacts/linkedin-decision-makers-summary.json
+            artifacts/lead-archive.json
           if-no-files-found: error
-      - name: Publish latest discovery snapshot
+      - name: Publish latest discovery snapshot and archive
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add artifacts/linkedin-decision-makers.json artifacts/linkedin-decision-makers.csv artifacts/linkedin-decision-makers-summary.json
-          git diff --cached --quiet || git commit -m "chore: refresh LinkedIn decision-maker discovery [skip ci]"
+          git add artifacts/linkedin-decision-makers.json artifacts/linkedin-decision-makers.csv artifacts/linkedin-decision-makers-summary.json artifacts/lead-archive.json
+          git diff --cached --quiet || git commit -m "chore: refresh LinkedIn decision-maker discovery archive [skip ci]"
           git push
